@@ -1,36 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:background="@color/surface">
 
-    <EditText
-        android:id="@+id/etA"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Number 1"
-        android:inputType="numberDecimal" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/purple_500"
+        app:titleTextColor="@color/white"
+        app:navigationIconTint="@color/white"
+        app:title="Calculator + Toast" />
 
-    <EditText
-        android:id="@+id/etB"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Number 2"
-        android:layout_marginTop="8dp"
-        android:inputType="numberDecimal" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-    <Spinner
-        android:id="@+id/spOperation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
 
-    <Button
-        android:id="@+id/btnEqual"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="="
-        android:layout_marginTop="14dp" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Calculator with Toast"
+                        android:textAppearance="@style/TextAppearance.MADLabExam.Title"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Result shown via Toast notification"
+                        android:textAppearance="@style/TextAppearance.MADLabExam.Subtitle"
+                        android:gravity="center"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="20dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MADLabExam.TextInputLayout"
+                        android:hint="Number 1">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etA"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal|numberSigned"
+                            android:background="@null" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MADLabExam.TextInputLayout"
+                        android:hint="Number 2"
+                        android:layout_marginTop="14dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etB"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal|numberSigned"
+                            android:background="@null" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Spinner
+                        android:id="@+id/spOperation"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="14dp"
+                        android:background="@drawable/bg_input"
+                        android:popupBackground="@color/surface_card" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEqual"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="= Calculate"
+                        android:textSize="18sp"
+                        android:layout_marginTop="18dp"
+                        app:cornerRadius="12dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

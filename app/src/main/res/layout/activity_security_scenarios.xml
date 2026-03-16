@@ -1,56 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/surface">
 
-    <LinearLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/purple_500"
+        app:titleTextColor="@color/white"
+        app:navigationIconTint="@color/white"
+        app:title="Device Security" />
 
-        <EditText
-            android:id="@+id/etOtp"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="OTP will autofill here"
-            android:inputType="number" />
+            android:orientation="vertical"
+            android:padding="20dp">
 
-        <Button
-            android:id="@+id/btnStartOtpListen"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Start OTP Listener"
-            android:layout_marginTop="12dp" />
+            <!-- OTP Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
 
-        <Button
-            android:id="@+id/btnInternetSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Internet On or Off Settings"
-            android:layout_marginTop="12dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-        <Button
-            android:id="@+id/btnUsbDebuggingSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="USB Debugging Settings"
-            android:layout_marginTop="8dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="OTP Verification"
+                        android:textAppearance="@style/TextAppearance.MADLabExam.SectionHeader"
+                        android:layout_marginBottom="12dp" />
 
-        <Button
-            android:id="@+id/btnKeyboardSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Untrusted Keyboard Settings"
-            android:layout_marginTop="8dp" />
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MADLabExam.TextInputLayout"
+                        android:hint="OTP will autofill here">
 
-        <Button
-            android:id="@+id/btnLocationSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Location On or Off Settings"
-            android:layout_marginTop="8dp" />
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etOtp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:background="@null" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-    </LinearLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnStartOtpListen"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="Start OTP Listener"
+                        android:layout_marginTop="12dp"
+                        app:cornerRadius="12dp" />
 
-</ScrollView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Device Settings Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/surface_card"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Device Settings"
+                        android:textAppearance="@style/TextAppearance.MADLabExam.SectionHeader"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnInternetSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="🌐 Internet Settings"
+                        style="@style/Widget.MADLabExam.Button.Outlined"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnUsbDebuggingSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="🔧 USB Debugging"
+                        style="@style/Widget.MADLabExam.Button.Outlined"
+                        android:layout_marginTop="10dp"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnKeyboardSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="⌨️ Keyboard Settings"
+                        style="@style/Widget.MADLabExam.Button.Outlined"
+                        android:layout_marginTop="10dp"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLocationSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="📍 Location Settings"
+                        style="@style/Widget.MADLabExam.Button.Outlined"
+                        android:layout_marginTop="10dp"
+                        app:cornerRadius="12dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

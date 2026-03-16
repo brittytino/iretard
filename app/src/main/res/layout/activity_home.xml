@@ -1,30 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     android:background="@color/surface">
 
-    <TextView
+    <!-- Header -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="MAD Lab Exam Modules"
-        android:textAppearance="@style/TextAppearance.MADLabExam.Title"
-        android:paddingBottom="10dp" />
+        android:orientation="vertical"
+        android:background="@drawable/bg_gradient"
+        android:padding="24dp"
+        android:paddingTop="40dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tap any module to open"
-        android:paddingBottom="12dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MAD Lab Modules"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
 
-    <ListView
-        android:id="@+id/lvModules"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tap any module to explore"
+            android:textSize="14sp"
+            android:textColor="#B0BEC5"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+    <!-- Module Grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvModules"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_card"
-        android:divider="@color/divider"
-        android:dividerHeight="1dp" />
+        android:padding="12dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never" />
 
 </LinearLayout>
