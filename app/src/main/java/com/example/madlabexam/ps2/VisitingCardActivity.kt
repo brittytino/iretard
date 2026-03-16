@@ -1,9 +1,11 @@
 package com.example.madlabexam.ps2
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.R
 
-class VisitingCardActivity : AppCompatActivity() {
+import android.os.Bundle
+import com.example.madlabexam.BaseActivity
+
+class VisitingCardActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_visiting_card)

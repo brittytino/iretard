@@ -1,14 +1,31 @@
+# IntelliJ / Android Studio
 *.iml
+.idea/
+
+# Local environment
+local.properties
+
+# Gradle caches
 .gradle/
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+
+# Build outputs (root + modules)
+build/
+**/build/
+captures/
+outputs/
+
+# Native build folders
+.externalNativeBuild/
+.cxx/
+
+# APK / AAB artifacts
+*.apk
+*.ap_
+*.aab
+
+# Logs
+*.log
+
+# OS files
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+Thumbs.db

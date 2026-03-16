@@ -1,15 +1,17 @@
 package com.example.madlabexam.ps7
 
+import com.example.madlabexam.R
+
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 import com.google.android.gms.auth.api.phone.SmsRetriever
 
-class SecurityScenariosActivity : AppCompatActivity() {
+class SecurityScenariosActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,5 +1,7 @@
 package com.example.madlabexam.ps6
 
+import com.example.madlabexam.R
+
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -9,11 +11,11 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-class HospitalDirectoryActivity : AppCompatActivity() {
+class HospitalDirectoryActivity : BaseActivity() {
 
     private val callPermissionCode = 101
     private var selectedPhone: String? = null

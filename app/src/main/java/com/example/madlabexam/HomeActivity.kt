@@ -1,10 +1,11 @@
 package com.example.madlabexam
 
+import com.example.madlabexam.R
+
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
-import androidx.appcompat.app.AppCompatActivity
 import com.example.madlabexam.exercise1.ConverterActivity
 import com.example.madlabexam.exercise2.CookieActivity
 import com.example.madlabexam.mock1.MainMenuActivity
@@ -17,7 +18,7 @@ import com.example.madlabexam.ps5.StudentRegistrationActivity
 import com.example.madlabexam.ps6.HospitalDirectoryActivity
 import com.example.madlabexam.ps7.SecurityScenariosActivity
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

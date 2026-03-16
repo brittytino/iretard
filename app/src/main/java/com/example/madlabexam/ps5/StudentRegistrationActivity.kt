@@ -1,5 +1,7 @@
 package com.example.madlabexam.ps5
 
+import com.example.madlabexam.R
+
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
@@ -11,10 +13,10 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 import java.util.Calendar
 
-class StudentRegistrationActivity : AppCompatActivity() {
+class StudentRegistrationActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

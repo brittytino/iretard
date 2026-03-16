@@ -1,5 +1,7 @@
 package com.example.madlabexam.ps4
 
+import com.example.madlabexam.R
+
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
@@ -8,9 +10,9 @@ import android.widget.EditText
 import android.widget.ListView
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 
-class PS4FormActivity : AppCompatActivity() {
+class PS4FormActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,12 +1,14 @@
 package com.example.madlabexam.exercise2
 
+import com.example.madlabexam.R
+
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 
-class CookieActivity : AppCompatActivity() {
+class CookieActivity : BaseActivity() {
 
     private var isHungry = true
 

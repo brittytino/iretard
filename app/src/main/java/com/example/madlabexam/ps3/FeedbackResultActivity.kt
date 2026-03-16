@@ -1,10 +1,12 @@
 package com.example.madlabexam.ps3
 
+import com.example.madlabexam.R
+
 import android.os.Bundle
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 
-class FeedbackResultActivity : AppCompatActivity() {
+class FeedbackResultActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

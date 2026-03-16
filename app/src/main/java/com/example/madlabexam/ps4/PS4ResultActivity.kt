@@ -1,10 +1,12 @@
 package com.example.madlabexam.ps4
 
+import com.example.madlabexam.R
+
 import android.os.Bundle
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 
-class PS4ResultActivity : AppCompatActivity() {
+class PS4ResultActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

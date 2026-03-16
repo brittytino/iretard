@@ -1,13 +1,15 @@
 package com.example.madlabexam.mock1
 
+import com.example.madlabexam.R
+
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
+import com.example.madlabexam.BaseActivity
 import androidx.appcompat.app.AppCompatDelegate
 
-class MainMenuActivity : AppCompatActivity() {
+class MainMenuActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,7 +19,13 @@ class MainMenuActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        updateThemeMenuTitle(menu)
         return true
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        updateThemeMenuTitle(menu)
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -51,6 +59,11 @@ class MainMenuActivity : AppCompatActivity() {
             if (nextDark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
         )
         recreate()
+    }
+
+    private fun updateThemeMenuTitle(menu: Menu) {
+        val isDark = getSharedPreferences("mock_test_prefs", MODE_PRIVATE).getBoolean("is_dark", false)
+        menu.findItem(R.id.menu_theme_toggle)?.title = if (isDark) "Light Theme" else "Dark Theme"
     }
 
     private fun applySavedTheme() {

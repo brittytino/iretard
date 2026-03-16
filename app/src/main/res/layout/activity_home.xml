@@ -3,14 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/surface">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="MAD Lab Exam Modules"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.MADLabExam.Title"
         android:paddingBottom="10dp" />
 
     <TextView
@@ -22,6 +22,9 @@
     <ListView
         android:id="@+id/lvModules"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_card"
+        android:divider="@color/divider"
+        android:dividerHeight="1dp" />
 
 </LinearLayout>
