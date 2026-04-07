@@ -11,6 +11,7 @@
     "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
+    "https://instagram.com/*",
     "https://www.instagram.com/*",
     "https://i.instagram.com/*",
     "https://graph.instagram.com/*"
@@ -35,6 +36,7 @@
   "content_scripts": [
     {
       "matches": [
+        "https://instagram.com/*",
         "https://www.instagram.com/*"
       ],
       "js": [

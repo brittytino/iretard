@@ -27,6 +27,7 @@
     "tv"
   ]);
   const INSTAGRAM_HOSTNAMES = new Set([
+    "instagram.com",
     "www.instagram.com",
     "i.instagram.com",
     "graph.instagram.com"

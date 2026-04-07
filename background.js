@@ -6,7 +6,7 @@ const BASE_ALLOW_RULES = [
     priority: 5,
     action: { type: "allow" },
     condition: {
-      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/direct_v2\\/",
+      regexFilter: "^https:\\/\\/((www|i)\\.)?instagram\\.com\\/api\\/v1\\/direct_v2\\/",
       resourceTypes: ["xmlhttprequest"]
     }
   },
@@ -15,7 +15,7 @@ const BASE_ALLOW_RULES = [
     priority: 5,
     action: { type: "allow" },
     condition: {
-      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/stories\\/",
+      regexFilter: "^https:\\/\\/((www|i)\\.)?instagram\\.com\\/api\\/v1\\/stories\\/",
       resourceTypes: ["xmlhttprequest"]
     }
   },
@@ -24,7 +24,7 @@ const BASE_ALLOW_RULES = [
     priority: 6,
     action: { type: "allow" },
     condition: {
-      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/notifications\\/",
+      regexFilter: "^https:\\/\\/((www|i)\\.)?instagram\\.com\\/api\\/v1\\/notifications\\/",
       resourceTypes: ["xmlhttprequest"]
     }
   },
@@ -33,7 +33,7 @@ const BASE_ALLOW_RULES = [
     priority: 6,
     action: { type: "allow" },
     condition: {
-      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/users\\/",
+      regexFilter: "^https:\\/\\/((www|i)\\.)?instagram\\.com\\/api\\/v1\\/users\\/",
       resourceTypes: ["xmlhttprequest"]
     }
   }
@@ -50,7 +50,7 @@ const BLOCK_RULES = [
       }
     },
     condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/reels(\\/|\\?|$)",
+      regexFilter: "^https:\\/\\/(www\\.)?instagram\\.com\\/reels(\\/|\\?|$)",
       resourceTypes: ["main_frame"]
     }
   },
@@ -64,7 +64,7 @@ const BLOCK_RULES = [
       }
     },
     condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/reel(\\/|\\?|$)",
+      regexFilter: "^https:\\/\\/(www\\.)?instagram\\.com\\/reel(\\/|\\?|$)",
       resourceTypes: ["main_frame"]
     }
   },
@@ -73,7 +73,7 @@ const BLOCK_RULES = [
     priority: 7,
     action: { type: "block" },
     condition: {
-      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.+fragment_clips",
+      regexFilter: "^https:\\/\\/((www|i)\\.)?instagram\\.com\\/.+fragment_clips",
       resourceTypes: ["xmlhttprequest", "main_frame"]
     }
   },
@@ -82,7 +82,7 @@ const BLOCK_RULES = [
     priority: 7,
     action: { type: "block" },
     condition: {
-      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/(.*(feed\\/timeline|feed\\/following|web\\/feed\\/timeline).*)$|^https:\\/\\/www\\.instagram\\.com\\/(graphql\\/query|api\\/graphql)\\/?\\?.*(feed|timeline|for_you|home|xdt_api__v1__feed__timeline)",
+      regexFilter: "^https:\\/\\/((www|i)\\.)?instagram\\.com\\/(.*(feed\\/timeline|feed\\/following|web\\/feed\\/timeline).*)$|^https:\\/\\/((www|i)\\.)?instagram\\.com\\/(graphql\\/query|api\\/graphql)\\/?\\?.*(feed|timeline|for_you|home|xdt_api__v1__feed__timeline)",
       resourceTypes: ["xmlhttprequest"]
     }
   }
@@ -214,7 +214,9 @@ async function broadcastState(state) {
     // Ignore when no extension page is currently listening.
   }
 
-  const tabs = await chrome.tabs.query({ url: ["https://www.instagram.com/*"] });
+  const tabs = await chrome.tabs.query({
+    url: ["https://instagram.com/*", "https://www.instagram.com/*"]
+  });
   await Promise.all(
     tabs.map(async (tab) => {
       if (tab.id === undefined) {
@@ -281,6 +283,30 @@ async function startTrackingIfEligible(tab) {
   tracking.windowId = tab.windowId;
   tracking.url = tab.url;
   tracking.startedAt = globalThis.IretardBlocker.shouldTrackUsage(tab.url, state, now) ? now : 0;
+}
+
+async function primeTrackingFromMessageSender(sender, messageUrl) {
+  if (!sender || !sender.tab || sender.tab.id === undefined) {
+    return;
+  }
+
+  const resolvedUrl = messageUrl || sender.tab.url || "";
+  if (!resolvedUrl || !globalThis.IretardBlocker.isInstagramUrl(resolvedUrl)) {
+    return;
+  }
+
+  const now = Date.now();
+  const state = await globalThis.IretardStorage.getState(now);
+  const shouldTrack = globalThis.IretardBlocker.shouldTrackUsage(resolvedUrl, state, now);
+
+  if (tracking.tabId !== null && tracking.tabId !== sender.tab.id) {
+    await flushTrackedUsage(true);
+  }
+
+  tracking.tabId = sender.tab.id;
+  tracking.windowId = sender.tab.windowId;
+  tracking.url = resolvedUrl;
+  tracking.startedAt = shouldTrack ? (tracking.startedAt || now) : 0;
 }
 
 async function syncTrackingToActiveTab() {
@@ -422,6 +448,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.type === "GET_STATE") {
+      await withTrackingLock(async () => {
+        await primeTrackingFromMessageSender(sender, message.url);
+      });
       const url = message.url || tracking.url || "https://www.instagram.com/";
       const evaluated = await evaluateUrl(url);
       sendResponse({ ok: true, ...evaluated });
@@ -429,6 +458,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.type === "EVALUATE_URL") {
+      await withTrackingLock(async () => {
+        await primeTrackingFromMessageSender(sender, message.url);
+      });
       const evaluated = await evaluateUrl(message.url);
       sendResponse({ ok: true, ...evaluated });
       return;
@@ -455,20 +487,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       let ignored = false;
       await withTrackingLock(async () => {
         if (sender.tab && sender.tab.id !== undefined) {
-          const isForeground = await isForegroundActiveTab(sender.tab.id, sender.tab.windowId);
-          if (!isForeground) {
-            ignored = true;
-            return;
-          }
-
-          if (tracking.tabId !== sender.tab.id) {
-            await flushTrackedUsage(true);
-          }
-
-          await startTrackingIfEligible({
-            ...sender.tab,
-            url: message.url || sender.tab.url
-          });
+          await primeTrackingFromMessageSender(sender, message.url || sender.tab.url);
+        } else {
+          ignored = true;
         }
       });
 
@@ -489,10 +510,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (message.type === "SYNC_USAGE_AND_EVALUATE") {
       await withTrackingLock(async () => {
+        await primeTrackingFromMessageSender(sender, message.url);
         await flushTrackedUsage(false);
       });
       const evaluated = await evaluateUrl(message.url);
       sendResponse({ ok: true, ...evaluated });
+      return;
+    }
+
+    if (message.type === "ACK_CHALLENGE") {
+      const now = Date.now();
+      await withTrackingLock(async () => {
+        await primeTrackingFromMessageSender(sender, message.url);
+        await flushTrackedUsage(false);
+      });
+
+      const checkpoint = Math.max(0, Math.floor(Number(message.checkpoint) || 0));
+      const state = await globalThis.IretardStorage.updateState((current) => ({
+        ...current,
+        challengeCheckpoint: Math.max(Number(current.challengeCheckpoint) || 0, checkpoint)
+      }), now);
+
+      await broadcastState(state);
+      sendResponse({
+        ok: true,
+        state,
+        metrics: globalThis.IretardStorage.buildMetrics(state, now),
+        tracking: buildTrackingSnapshot(state, now),
+        now
+      });
       return;
     }
 

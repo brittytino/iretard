@@ -144,9 +144,10 @@
   let lastKnownState = globalThis.IretardStorage.normalizeState({});
   let applyingBlockUi = false;
   let challengeTickTimer = null;
-  let challengeActiveMs = 0;
   let challengeVisible = false;
   let challengeAnswer = null;
+  let pendingChallengeCheckpoint = 0;
+  let challengeTrackingPaused = false;
   let usageHeartbeatTimer = null;
   let lastUsageSyncAt = 0;
 
@@ -423,6 +424,14 @@
     style.id = CHALLENGE_STYLE_ID;
     style.textContent = `
       #${CHALLENGE_CONTAINER_ID} {
+        --challenge-bg: #f6f8fc;
+        --challenge-surface: #ffffff;
+        --challenge-border: #d7dfed;
+        --challenge-text: #12192a;
+        --challenge-subtle: #5b6987;
+        --challenge-accent: #1f3c70;
+        --challenge-accent-2: #2f5aa2;
+        --challenge-focus: rgba(42, 93, 187, 0.25);
         position: fixed;
         inset: 0;
         z-index: 2147483646;
@@ -430,76 +439,144 @@
         align-items: center;
         justify-content: center;
         padding: 20px;
-        background: rgba(9, 14, 24, 0.64);
-        backdrop-filter: blur(5px);
+        background: rgba(10, 14, 24, 0.58);
+        backdrop-filter: blur(7px);
         font-family: "Avenir Next", "Manrope", "SF Pro Display", "Segoe UI", sans-serif;
       }
 
       #${CHALLENGE_CONTAINER_ID} .iretard-challenge-card {
-        width: min(460px, 100%);
-        background: #ffffff;
-        border: 1px solid #d8deea;
-        border-radius: 18px;
-        box-shadow: 0 22px 48px rgba(15, 22, 38, 0.28);
-        padding: 24px;
+        width: min(500px, 100%);
+        background: linear-gradient(160deg, #ffffff 0%, var(--challenge-bg) 100%);
+        border: 1px solid var(--challenge-border);
+        border-radius: 20px;
+        box-shadow: 0 26px 52px rgba(10, 18, 34, 0.30);
+        padding: 26px;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 12px;
+        border: 1px solid #c7d7f5;
+        border-radius: 999px;
+        padding: 4px 10px;
+        background: rgba(205, 221, 247, 0.42);
+        color: #224172;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
       }
 
       #${CHALLENGE_CONTAINER_ID} .iretard-challenge-title {
         margin: 0;
-        font-size: clamp(25px, 6vw, 32px);
+        font-size: clamp(26px, 6vw, 34px);
         line-height: 1.08;
         letter-spacing: -0.02em;
-        color: #131a2a;
+        color: var(--challenge-text);
       }
 
       #${CHALLENGE_CONTAINER_ID} .iretard-challenge-subtitle {
-        margin: 10px 0 0;
-        color: #51607e;
+        margin: 10px 0 2px;
+        color: var(--challenge-subtle);
         font-size: 15px;
         line-height: 1.45;
       }
 
       #${CHALLENGE_CONTAINER_ID} .iretard-challenge-expression {
-        margin: 16px 0 12px;
-        font-size: clamp(26px, 7vw, 34px);
+        margin: 18px 0 14px;
+        border: 1px solid #d9e2f3;
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: #f7f9ff;
+        font-size: clamp(28px, 7vw, 36px);
         font-weight: 700;
         letter-spacing: -0.02em;
-        color: #0f1628;
+        color: #0d1528;
+        text-align: center;
       }
 
       #${CHALLENGE_CONTAINER_ID} .iretard-challenge-row {
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 8px;
+        gap: 10px;
       }
 
-      #${CHALLENGE_CONTAINER_ID} input {
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-answer {
+        min-height: 48px;
         width: 100%;
-        border: 1px solid #ced6e8;
+        border: 1px solid #c8d4eb;
         border-radius: 12px;
-        padding: 11px 12px;
+        padding: 0 13px;
         font-size: 16px;
-        font-weight: 600;
-        color: #101727;
-        background: #f7f9ff;
+        font-weight: 650;
+        color: var(--challenge-text);
+        background: var(--challenge-surface);
+        outline: none;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
       }
 
-      #${CHALLENGE_CONTAINER_ID} button {
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-answer:focus {
+        border-color: #4b77bd;
+        box-shadow: 0 0 0 4px var(--challenge-focus);
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-submit {
+        min-height: 48px;
         border: none;
         border-radius: 12px;
-        padding: 0 14px;
-        background: #2e446b;
+        padding: 0 18px;
+        background: linear-gradient(140deg, var(--challenge-accent), var(--challenge-accent-2));
         color: #ffffff;
         font-size: 14px;
-        font-weight: 650;
+        font-weight: 700;
+        letter-spacing: 0.01em;
         cursor: pointer;
+        box-shadow: 0 10px 18px rgba(30, 63, 115, 0.28);
+        transition: transform 120ms ease, box-shadow 160ms ease, filter 160ms ease;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-submit:hover {
+        filter: brightness(1.04);
+        box-shadow: 0 12px 22px rgba(30, 63, 115, 0.34);
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-submit:active {
+        transform: translateY(1px);
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-hint {
+        margin: 8px 0 0;
+        color: var(--challenge-subtle);
+        font-size: 13px;
       }
 
       #${CHALLENGE_CONTAINER_ID} .iretard-challenge-feedback {
-        min-height: 18px;
+        min-height: 20px;
         margin: 10px 0 0;
         font-size: 13px;
-        color: #7d2d39;
+        color: #8d2f3f;
+        font-weight: 600;
+      }
+
+      @media (max-width: 560px) {
+        #${CHALLENGE_CONTAINER_ID} {
+          padding: 14px;
+        }
+
+        #${CHALLENGE_CONTAINER_ID} .iretard-challenge-card {
+          padding: 20px;
+          border-radius: 16px;
+        }
+
+        #${CHALLENGE_CONTAINER_ID} .iretard-challenge-row {
+          grid-template-columns: 1fr;
+        }
+
+        #${CHALLENGE_CONTAINER_ID} .iretard-challenge-submit {
+          width: 100%;
+        }
       }
     `;
 
@@ -517,15 +594,17 @@
     root.id = CHALLENGE_CONTAINER_ID;
     root.innerHTML = `
       <div class="iretard-challenge-card" role="dialog" aria-modal="true" aria-label="Focus challenge">
+        <p class="iretard-challenge-kicker">5-minute checkpoint</p>
         <h2 class="iretard-challenge-title">Break the scroll loop.</h2>
-        <p class="iretard-challenge-subtitle">Still doomscrolling? Solve this fast to unlock the next stretch.</p>
+        <p class="iretard-challenge-subtitle">Solve this medium challenge to continue. Usage timer is paused until you answer correctly.</p>
         <p class="iretard-challenge-expression" data-el="expression"></p>
         <form data-el="form" autocomplete="off">
           <div class="iretard-challenge-row">
-            <input data-el="answer" type="number" inputmode="numeric" placeholder="Enter answer" required>
-            <button type="submit">Continue</button>
+            <input class="iretard-challenge-answer" data-el="answer" type="number" inputmode="numeric" placeholder="Enter integer answer" required>
+            <button class="iretard-challenge-submit" type="submit">Submit</button>
           </div>
         </form>
+        <p class="iretard-challenge-hint">Tip: Use order of operations and double-check your final value.</p>
         <p class="iretard-challenge-feedback" data-el="feedback"></p>
       </div>
     `;
@@ -534,32 +613,89 @@
     return root;
   }
 
+  function randomInt(min, max) {
+    const low = Math.ceil(min);
+    const high = Math.floor(max);
+    return Math.floor(Math.random() * (high - low + 1)) + low;
+  }
+
   function buildChallengeExpression() {
-    const operators = ["+", "-", "*"];
-    const op = operators[Math.floor(Math.random() * operators.length)];
-    const left = 4 + Math.floor(Math.random() * 14);
-    const rightBase = 2 + Math.floor(Math.random() * 10);
+    const pattern = randomInt(1, 5);
 
-    if (op === "-") {
-      const right = Math.min(left - 1, rightBase);
+    if (pattern === 1) {
+      const a = randomInt(6, 14);
+      const b = randomInt(3, 9);
+      const c = randomInt(4, 11);
       return {
-        text: `${left} - ${right}`,
-        answer: left - right
+        text: `${a} * (${b} + ${c})`,
+        answer: a * (b + c)
       };
     }
 
-    if (op === "*") {
-      const right = 2 + Math.floor(Math.random() * 8);
+    if (pattern === 2) {
+      const a = randomInt(8, 16);
+      const b = randomInt(5, 14);
+      const c = randomInt(3, 7);
+      const d = randomInt(4, 12);
       return {
-        text: `${left} * ${right}`,
-        answer: left * right
+        text: `(${a} + ${b}) * ${c} - ${d}`,
+        answer: (a + b) * c - d
       };
     }
 
+    if (pattern === 3) {
+      const a = randomInt(6, 13);
+      const b = randomInt(4, 9);
+      const c = randomInt(5, 12);
+      const d = randomInt(3, 8);
+      return {
+        text: `${a} * ${b} + ${c} * ${d}`,
+        answer: a * b + c * d
+      };
+    }
+
+    if (pattern === 4) {
+      const a = randomInt(7, 13);
+      const b = randomInt(4, 9);
+      const c = randomInt(3, 7);
+      const d = randomInt(2, 6);
+      const left = a * b;
+      const right = c * d;
+      const adjustedLeft = left <= right ? right + randomInt(10, 40) : left;
+      return {
+        text: `(${adjustedLeft}) - (${right})`,
+        answer: adjustedLeft - right
+      };
+    }
+
+    const a = randomInt(3, 8);
+    const b = randomInt(4, 10);
+    const c = randomInt(2, 7);
+    const d = randomInt(3, 8);
     return {
-      text: `${left} + ${rightBase}`,
-      answer: left + rightBase
+      text: `(${a} + ${b}) * (${c} + ${d})`,
+      answer: (a + b) * (c + d)
     };
+  }
+
+  function pauseUsageForChallenge() {
+    if (challengeTrackingPaused) {
+      return;
+    }
+
+    challengeTrackingPaused = true;
+    void sendMessage("PAGE_INACTIVE", { url: location.href });
+  }
+
+  function resumeUsageAfterChallenge() {
+    if (!challengeTrackingPaused) {
+      return;
+    }
+
+    challengeTrackingPaused = false;
+    void sendMessage("PAGE_ACTIVE", { url: location.href }).then(() => {
+      void evaluateAndRender("challenge_resume");
+    });
   }
 
   function hideChallengeModal() {
@@ -570,10 +706,32 @@
 
     challengeVisible = false;
     challengeAnswer = null;
-    challengeActiveMs = 0;
+    pendingChallengeCheckpoint = 0;
+    resumeUsageAfterChallenge();
   }
 
-  function showChallengeModal() {
+  function getRequiredChallengeCheckpoint(state = lastKnownState) {
+    const usedMs = Math.max(0, Number(state && state.usedToday) || 0);
+    return Math.max(0, Math.floor(usedMs / globalThis.IretardStorage.CHALLENGE_INTERVAL_MS));
+  }
+
+  function getCompletedChallengeCheckpoint(state = lastKnownState) {
+    return Math.max(0, Math.floor(Number(state && state.challengeCheckpoint) || 0));
+  }
+
+  function applyLocalChallengeCheckpoint(checkpoint) {
+    const safeCheckpoint = Math.max(0, Math.floor(Number(checkpoint) || 0));
+    if (safeCheckpoint <= getCompletedChallengeCheckpoint(lastKnownState)) {
+      return;
+    }
+
+    lastKnownState = globalThis.IretardStorage.normalizeState({
+      ...lastKnownState,
+      challengeCheckpoint: safeCheckpoint
+    });
+  }
+
+  function showChallengeModal(checkpoint) {
     const root = ensureChallengeRoot();
     const expression = buildChallengeExpression();
     const form = root.querySelector('[data-el="form"]');
@@ -583,6 +741,8 @@
 
     challengeVisible = true;
     challengeAnswer = expression.answer;
+    pendingChallengeCheckpoint = Math.max(1, Math.floor(Number(checkpoint) || getRequiredChallengeCheckpoint(lastKnownState)));
+    pauseUsageForChallenge();
     expressionEl.textContent = expression.text;
     feedbackEl.textContent = "";
     answerInput.value = "";
@@ -603,7 +763,21 @@
           return;
         }
 
+        const checkpointToAck = Math.max(
+          pendingChallengeCheckpoint,
+          getRequiredChallengeCheckpoint(lastKnownState)
+        );
+        applyLocalChallengeCheckpoint(checkpointToAck);
         hideChallengeModal();
+
+        void sendMessage("ACK_CHALLENGE", {
+          checkpoint: checkpointToAck,
+          url: location.href
+        }).then((response) => {
+          if (response && response.ok && response.state) {
+            lastKnownState = globalThis.IretardStorage.normalizeState(response.state);
+          }
+        });
       });
     }
 
@@ -616,13 +790,14 @@
       return;
     }
 
-    if (document.visibilityState !== "visible" || !document.hasFocus()) {
+    if (document.visibilityState !== "visible") {
       return;
     }
 
-    challengeActiveMs += 1000;
-    if (challengeActiveMs >= globalThis.IretardStorage.CHALLENGE_INTERVAL_MS) {
-      showChallengeModal();
+    const requiredCheckpoint = getRequiredChallengeCheckpoint(lastKnownState);
+    const completedCheckpoint = getCompletedChallengeCheckpoint(lastKnownState);
+    if (requiredCheckpoint > completedCheckpoint) {
+      showChallengeModal(requiredCheckpoint);
     }
   }
 
@@ -784,6 +959,10 @@
   }
 
   async function evaluateAndRender(source) {
+    if (challengeVisible) {
+      return;
+    }
+
     if (redirectRouteIfNeeded(source)) {
       return;
     }
@@ -814,6 +993,7 @@
 
       lastKnownState = globalThis.IretardStorage.normalizeState(response.state);
       syncHomeFeedVisualBlock();
+      tickChallengeGate();
 
       if (isEmergencyOverride(lastKnownState, response.now)) {
         hideBlockOverlay();
@@ -895,7 +1075,7 @@
     }
 
     usageHeartbeatTimer = setInterval(() => {
-      if (document.visibilityState !== "visible" || !document.hasFocus()) {
+      if (document.visibilityState !== "visible") {
         return;
       }
 
@@ -904,7 +1084,7 @@
   }
 
   function syncUsageHeartbeat() {
-    if (document.visibilityState === "visible" && document.hasFocus()) {
+    if (document.visibilityState === "visible") {
       startUsageHeartbeat();
       return;
     }
@@ -952,7 +1132,7 @@
   }
 
   async function notifyPageActivity() {
-    const isActive = document.visibilityState === "visible" && document.hasFocus();
+    const isActive = document.visibilityState === "visible" && !challengeVisible;
     await sendMessage(isActive ? "PAGE_ACTIVE" : "PAGE_INACTIVE", { url: location.href });
   }
 
@@ -971,7 +1151,7 @@
 
     window.addEventListener("blur", () => {
       syncUsageHeartbeat();
-      void notifyPageActivity();
+      void evaluateAndRender("blur");
     }, { passive: true });
 
     window.addEventListener("beforeunload", () => {

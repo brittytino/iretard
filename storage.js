@@ -3,6 +3,7 @@
   const DEFAULT_STATE = Object.freeze({
     dailyLimit: STRICT_DAILY_LIMIT_MINUTES,
     usedToday: 0,
+    challengeCheckpoint: 0,
     lastReset: 0,
     emergencyCount: 0,
     emergencyActiveUntil: 0,
@@ -63,6 +64,7 @@
     return {
       dailyLimit: STRICT_DAILY_LIMIT_MINUTES,
       usedToday: Math.max(0, Math.floor(toSafeNumber(source.usedToday, DEFAULT_STATE.usedToday))),
+      challengeCheckpoint: Math.max(0, Math.floor(toSafeNumber(source.challengeCheckpoint, DEFAULT_STATE.challengeCheckpoint))),
       lastReset: Math.max(0, Math.floor(toSafeNumber(source.lastReset, DEFAULT_STATE.lastReset))),
       emergencyCount: 0,
       emergencyActiveUntil: 0,
@@ -83,6 +85,7 @@
       ...state,
       dailyLimit: STRICT_DAILY_LIMIT_MINUTES,
       usedToday: 0,
+      challengeCheckpoint: 0,
       emergencyCount: 0,
       emergencyActiveUntil: 0,
       limitLockedDate: getDayStamp(now),
