@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "iRetard",
+  "author": "brittytino",
   "description": "Blocks Instagram Reels/Explore, enforces daily limits, and supports emergency unlocks.",
   "version": "1.0.0",
   "permissions": [

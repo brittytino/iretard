@@ -2,6 +2,10 @@
 
 iRetard is a strict local-only Manifest V3 Chrome extension for Instagram discipline.
 
+## Open Source
+
+This project is open source on GitHub and maintained by brittytino.
+
 ## Strict Default Policy
 
 - No user override controls in popup
@@ -45,3 +49,19 @@ The extension blocks home feed timeline request patterns:
 2. Enable Developer mode
 3. Click Load unpacked
 4. Select this folder
+
+## Author
+
+- brittytino
+
+## Contributing
+
+Contributions are welcome. Please read CONTRIBUTING.md before opening pull requests.
+
+## Security
+
+If you find a security issue, please follow SECURITY.md and avoid public disclosure until it is reviewed.
+
+## License
+
+Released under the MIT License. See LICENSE.
