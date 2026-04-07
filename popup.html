@@ -10,54 +10,35 @@
     <main class="popup-shell" aria-live="polite">
       <header class="hero">
         <div class="brand-wrap" aria-label="iRetard brand">
-          <img class="brand-logo" src="assets/logo.png" alt="iRetard logo" width="20" height="20">
+          <img class="brand-logo" src="assets/logo-128.png" alt="iRetard logo" width="32" height="32">
           <div>
             <h1 class="app-title">iRetard</h1>
-            <p class="subtitle">System-level focus control</p>
+            <p class="subtitle">Strict Instagram discipline layer</p>
           </div>
         </div>
-
-        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle theme" aria-pressed="false">
-          <span class="theme-knob">
-            <svg class="theme-icon sun" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 2v2"></path>
-              <path d="M12 20v2"></path>
-              <path d="M4.93 4.93l1.41 1.41"></path>
-              <path d="M17.66 17.66l1.41 1.41"></path>
-              <path d="M2 12h2"></path>
-              <path d="M20 12h2"></path>
-              <path d="M4.93 19.07l1.41-1.41"></path>
-              <path d="M17.66 6.34l1.41-1.41"></path>
-            </svg>
-            <svg class="theme-icon moon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M21 13a8.5 8.5 0 1 1-10-10 7 7 0 0 0 10 10z"></path>
-            </svg>
-          </span>
-          <span class="theme-labels"><span>Sun</span><span>Moon</span></span>
-        </button>
+        <span class="strict-chip">Strict Mode</span>
       </header>
 
-      <section class="panel" aria-label="Daily limit settings">
-        <div class="panel-topline">
-          <p>Today</p>
-          <strong id="status">Normal</strong>
+      <section class="panel" aria-label="Daily cap status">
+        <div class="panel-head">
+          <p class="kicker">Daily status</p>
+          <strong id="status">Active</strong>
         </div>
 
-        <form id="limitForm" class="limit-form" novalidate>
-          <label for="dailyLimit" class="field-label">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="8"></circle>
-              <path d="M12 7v5l3 2"></path>
-            </svg>
-            Daily limit (minutes)
-          </label>
-          <div class="limit-row">
-            <input id="dailyLimit" type="number" min="1" max="1440" inputmode="numeric" required>
-            <button id="saveBtn" type="submit">Apply</button>
-          </div>
-          <p id="limitLockNotice" class="lock-notice" hidden>Locked for today</p>
-        </form>
+        <div class="usage-grid" role="group" aria-label="Usage metrics">
+          <article>
+            <p>Daily cap</p>
+            <strong id="dailyCap">30m</strong>
+          </article>
+          <article>
+            <p>Used today</p>
+            <strong id="usedToday">0m</strong>
+          </article>
+          <article>
+            <p>Remaining</p>
+            <strong id="remaining">0m</strong>
+          </article>
+        </div>
 
         <div class="progress-wrap" role="img" aria-label="Daily usage progress">
           <div class="progress-track">
@@ -65,53 +46,34 @@
           </div>
         </div>
 
-        <section class="stats" aria-label="Usage stats">
-          <p>
-            <span>
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3v9l6 3"></path>
-                <circle cx="12" cy="12" r="8"></circle>
-              </svg>
-              Used today
-            </span>
-            <strong id="usedToday">0m</strong>
-          </p>
-          <p>
-            <span>
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 12h16"></path>
-                <path d="M14 6l6 6-6 6"></path>
-              </svg>
-              Remaining
-            </span>
-            <strong id="remaining">0m</strong>
-          </p>
-          <p>
-            <span>
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3l8 5v8l-8 5-8-5V8z"></path>
-              </svg>
-              Emergency uses left
-            </span>
-            <strong id="emergencyLeft">3</strong>
-          </p>
-        </section>
+        <p class="strict-note">Every 5 minutes of active use triggers a mandatory math challenge modal.</p>
       </section>
 
-      <section class="actions">
-        <button id="emergencyBtn" class="emergency" type="button">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 3l8 5v8l-8 5-8-5V8z"></path>
-            <path d="M12 8v5"></path>
-            <circle cx="12" cy="16" r="0.7" fill="currentColor" stroke="none"></circle>
-          </svg>
-          Use Emergency (5 min)
-        </button>
+      <section class="split-panels" aria-label="Feature status lists">
+        <article class="panel mini">
+          <h2>Disabled</h2>
+          <ul>
+            <li>Feed posts</li>
+            <li>Explore content</li>
+            <li>Reels feed (redirected)</li>
+            <li>Telemetry and analytics</li>
+            <li>Shopping and commerce preloads</li>
+          </ul>
+        </article>
+        <article class="panel mini">
+          <h2>Still works</h2>
+          <ul>
+            <li>Stories</li>
+            <li>Direct messages</li>
+            <li>Profile</li>
+            <li>Reels in DMs</li>
+            <li>Search and notifications</li>
+          </ul>
+        </article>
       </section>
 
       <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
-
-      <footer class="popup-footer">Runs fully local on this browser.</footer>
+      <footer class="popup-footer">No user overrides. Policy is enforced locally in this browser.</footer>
     </main>
 
     <script src="storage.js"></script>

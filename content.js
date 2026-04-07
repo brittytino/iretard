@@ -2,7 +2,11 @@
   const BLOCK_CONTAINER_ID = "iretard-block-root";
   const BLOCK_STYLE_ID = "iretard-block-style";
   const PREBLOCK_STYLE_ID = "iretard-preblock-style";
+  const CHALLENGE_CONTAINER_ID = "iretard-challenge-root";
+  const CHALLENGE_STYLE_ID = "iretard-challenge-style";
   const HARD_BLOCK_CLASS = "iretard-hard-block";
+  const DIRECT_INBOX_URL = "https://www.instagram.com/direct/inbox/";
+  const FEUR_HOOKS_KEY = "FeurHooks";
 
   function normalizePath(pathname) {
     const lower = String(pathname || "/").toLowerCase();
@@ -17,8 +21,71 @@
     const normalizedPath = normalizePath(pathname);
     return startsWithPath(normalizedPath, "/reels")
       || startsWithPath(normalizedPath, "/reel")
-      || startsWithPath(normalizedPath, "/explore")
       || startsWithPath(normalizedPath, "/video/unified_cvc");
+  }
+
+  function getRedirectUrlForInput(input) {
+    try {
+      const url = input instanceof URL ? input : new URL(String(input || location.href), location.origin);
+      if (!globalThis.IretardBlocker.shouldRedirectToDirectTab(url.href)) {
+        return null;
+      }
+
+      return DIRECT_INBOX_URL;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function redirectToDirectInbox(reason) {
+    if (location.href === DIRECT_INBOX_URL) {
+      return false;
+    }
+
+    try {
+      location.replace(DIRECT_INBOX_URL);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function createIOException(requestUri, reason) {
+    const error = new Error(`Blocked Instagram request: ${reason} :: ${requestUri}`);
+    error.name = "IOException";
+    return error;
+  }
+
+  function ensureFeurHooks() {
+    if (globalThis[FEUR_HOOKS_KEY]) {
+      return globalThis[FEUR_HOOKS_KEY];
+    }
+
+    const hooks = {
+      getBlockReason(uri) {
+        const redirectTarget = getRedirectUrlForInput(uri);
+        if (redirectTarget) {
+          return "fragment_clips";
+        }
+
+        return globalThis.IretardBlocker.getNetworkBlockReason(uri);
+      },
+      throwIfBlocked(uri) {
+        const reason = this.getBlockReason(uri);
+        if (!reason) {
+          return null;
+        }
+
+        if (reason === "fragment_clips") {
+          redirectToDirectInbox("fragment_clips");
+        }
+
+        throw createIOException(String(uri || "unknown"), reason);
+      }
+    };
+
+    globalThis[FEUR_HOOKS_KEY] = hooks;
+    return hooks;
   }
 
   function isStrictBlockedUrl(input) {
@@ -54,6 +121,10 @@
     document.documentElement.appendChild(preStyle);
   }
 
+  if (getRedirectUrlForInput(location.href)) {
+    redirectToDirectInbox("preboot");
+  }
+
   if (isStrictBlockedUrl(location.href)) {
     ensurePreBlockStyle();
     document.documentElement.classList.add(HARD_BLOCK_CLASS);
@@ -65,6 +136,12 @@
   let currentReason = null;
   let lastKnownState = globalThis.IretardStorage.normalizeState({});
   let applyingBlockUi = false;
+  let challengeTickTimer = null;
+  let challengeActiveMs = 0;
+  let challengeVisible = false;
+  let challengeAnswer = null;
+
+  ensureFeurHooks();
 
   function clearPreBlockOnly() {
     const preStyle = document.getElementById(PREBLOCK_STYLE_ID);
@@ -93,6 +170,70 @@
         resolve(null);
       }
     });
+  }
+
+  function installNetworkInterceptors() {
+    const hooks = ensureFeurHooks();
+
+    if (typeof window.fetch === "function" && !window.fetch.__iretardPatched) {
+      const originalFetch = window.fetch.bind(window);
+      const patchedFetch = function patchedFetch(input, init) {
+        const requestUri = input instanceof Request ? input.url : input;
+
+        try {
+          hooks.throwIfBlocked(requestUri);
+        } catch (error) {
+          return Promise.reject(error);
+        }
+
+        return originalFetch(input, init);
+      };
+
+      patchedFetch.__iretardPatched = true;
+      window.fetch = patchedFetch;
+    }
+
+    if (typeof XMLHttpRequest !== "undefined" && !XMLHttpRequest.prototype.__iretardPatched) {
+      const originalOpen = XMLHttpRequest.prototype.open;
+      const originalSend = XMLHttpRequest.prototype.send;
+
+      XMLHttpRequest.prototype.open = function patchedOpen(method, url, ...rest) {
+        try {
+          this.__iretardRequestUri = new URL(String(url || ""), location.origin).href;
+        } catch (_error) {
+          this.__iretardRequestUri = String(url || "");
+        }
+
+        return originalOpen.call(this, method, url, ...rest);
+      };
+
+      XMLHttpRequest.prototype.send = function patchedSend(body) {
+        hooks.throwIfBlocked(this.__iretardRequestUri || "");
+        return originalSend.call(this, body);
+      };
+
+      XMLHttpRequest.prototype.__iretardPatched = true;
+    }
+
+    if (navigator && typeof navigator.sendBeacon === "function" && !navigator.sendBeacon.__iretardPatched) {
+      const originalSendBeacon = navigator.sendBeacon.bind(navigator);
+      const patchedSendBeacon = function patchedSendBeacon(url, data) {
+        try {
+          hooks.throwIfBlocked(url);
+        } catch (_error) {
+          return false;
+        }
+
+        return originalSendBeacon(url, data);
+      };
+
+      patchedSendBeacon.__iretardPatched = true;
+      try {
+        navigator.sendBeacon = patchedSendBeacon;
+      } catch (_error) {
+        // Ignore when browser marks sendBeacon as non-writable.
+      }
+    }
   }
 
   function formatMinutes(ms) {
@@ -216,6 +357,228 @@
     document.documentElement.appendChild(style);
   }
 
+  function ensureChallengeStyles() {
+    if (document.getElementById(CHALLENGE_STYLE_ID)) {
+      return;
+    }
+
+    const style = document.createElement("style");
+    style.id = CHALLENGE_STYLE_ID;
+    style.textContent = `
+      #${CHALLENGE_CONTAINER_ID} {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483646;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(9, 14, 24, 0.64);
+        backdrop-filter: blur(5px);
+        font-family: "Avenir Next", "Manrope", "SF Pro Display", "Segoe UI", sans-serif;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-card {
+        width: min(460px, 100%);
+        background: #ffffff;
+        border: 1px solid #d8deea;
+        border-radius: 18px;
+        box-shadow: 0 22px 48px rgba(15, 22, 38, 0.28);
+        padding: 24px;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-title {
+        margin: 0;
+        font-size: clamp(25px, 6vw, 32px);
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: #131a2a;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-subtitle {
+        margin: 10px 0 0;
+        color: #51607e;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-expression {
+        margin: 16px 0 12px;
+        font-size: clamp(26px, 7vw, 34px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #0f1628;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} input {
+        width: 100%;
+        border: 1px solid #ced6e8;
+        border-radius: 12px;
+        padding: 11px 12px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #101727;
+        background: #f7f9ff;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} button {
+        border: none;
+        border-radius: 12px;
+        padding: 0 14px;
+        background: #2e446b;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 650;
+        cursor: pointer;
+      }
+
+      #${CHALLENGE_CONTAINER_ID} .iretard-challenge-feedback {
+        min-height: 18px;
+        margin: 10px 0 0;
+        font-size: 13px;
+        color: #7d2d39;
+      }
+    `;
+
+    document.documentElement.appendChild(style);
+  }
+
+  function ensureChallengeRoot() {
+    let root = document.getElementById(CHALLENGE_CONTAINER_ID);
+    if (root) {
+      return root;
+    }
+
+    ensureChallengeStyles();
+    root = document.createElement("div");
+    root.id = CHALLENGE_CONTAINER_ID;
+    root.innerHTML = `
+      <div class="iretard-challenge-card" role="dialog" aria-modal="true" aria-label="Focus challenge">
+        <h2 class="iretard-challenge-title">Break the scroll loop.</h2>
+        <p class="iretard-challenge-subtitle">Still doomscrolling? Solve this fast to unlock the next stretch.</p>
+        <p class="iretard-challenge-expression" data-el="expression"></p>
+        <form data-el="form" autocomplete="off">
+          <div class="iretard-challenge-row">
+            <input data-el="answer" type="number" inputmode="numeric" placeholder="Enter answer" required>
+            <button type="submit">Continue</button>
+          </div>
+        </form>
+        <p class="iretard-challenge-feedback" data-el="feedback"></p>
+      </div>
+    `;
+
+    document.documentElement.appendChild(root);
+    return root;
+  }
+
+  function buildChallengeExpression() {
+    const operators = ["+", "-", "*"];
+    const op = operators[Math.floor(Math.random() * operators.length)];
+    const left = 4 + Math.floor(Math.random() * 14);
+    const rightBase = 2 + Math.floor(Math.random() * 10);
+
+    if (op === "-") {
+      const right = Math.min(left - 1, rightBase);
+      return {
+        text: `${left} - ${right}`,
+        answer: left - right
+      };
+    }
+
+    if (op === "*") {
+      const right = 2 + Math.floor(Math.random() * 8);
+      return {
+        text: `${left} * ${right}`,
+        answer: left * right
+      };
+    }
+
+    return {
+      text: `${left} + ${rightBase}`,
+      answer: left + rightBase
+    };
+  }
+
+  function hideChallengeModal() {
+    const root = document.getElementById(CHALLENGE_CONTAINER_ID);
+    if (root) {
+      root.style.display = "none";
+    }
+
+    challengeVisible = false;
+    challengeAnswer = null;
+    challengeActiveMs = 0;
+  }
+
+  function showChallengeModal() {
+    const root = ensureChallengeRoot();
+    const expression = buildChallengeExpression();
+    const form = root.querySelector('[data-el="form"]');
+    const answerInput = root.querySelector('[data-el="answer"]');
+    const expressionEl = root.querySelector('[data-el="expression"]');
+    const feedbackEl = root.querySelector('[data-el="feedback"]');
+
+    challengeVisible = true;
+    challengeAnswer = expression.answer;
+    expressionEl.textContent = expression.text;
+    feedbackEl.textContent = "";
+    answerInput.value = "";
+
+    if (!form.__iretardBound) {
+      form.__iretardBound = true;
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const userValue = Number(answerInput.value);
+        if (!Number.isFinite(userValue)) {
+          feedbackEl.textContent = "Enter a number to continue.";
+          return;
+        }
+
+        if (userValue !== challengeAnswer) {
+          feedbackEl.textContent = "Wrong. Focus up and solve it correctly.";
+          return;
+        }
+
+        hideChallengeModal();
+      });
+    }
+
+    root.style.display = "flex";
+    answerInput.focus();
+  }
+
+  function tickChallengeGate() {
+    if (challengeVisible || currentReason) {
+      return;
+    }
+
+    if (document.visibilityState !== "visible" || !document.hasFocus()) {
+      return;
+    }
+
+    challengeActiveMs += 1000;
+    if (challengeActiveMs >= globalThis.IretardStorage.CHALLENGE_INTERVAL_MS) {
+      showChallengeModal();
+    }
+  }
+
+  function startChallengeTicker() {
+    if (challengeTickTimer) {
+      return;
+    }
+
+    challengeTickTimer = setInterval(() => {
+      tickChallengeGate();
+    }, 1000);
+  }
+
   function ensureBlockRoot() {
     let root = document.getElementById(BLOCK_CONTAINER_ID);
     if (root) {
@@ -256,7 +619,7 @@
     return {
       title: "Not this time.",
       subtitle: "You didn't come here with a purpose.",
-      reasonLine: "Reels and Explore are blocked by design.",
+      reasonLine: "Reels are disabled and redirected away from this tab.",
       usedLine: `Time used today: ${formatMinutes(safeState.usedToday)}`,
       resetLine: `Try stories or direct messages instead.`
     };
@@ -264,6 +627,10 @@
 
   async function showBlockOverlay(reason, state) {
     applyingBlockUi = true;
+    if (challengeVisible) {
+      hideChallengeModal();
+    }
+
     const root = ensureBlockRoot();
     const resolvedTheme = await getResolvedTheme();
     const text = getBlockText(reason, state);
@@ -334,7 +701,20 @@
     return isStrictBlockedUrl(location.href) && !isEmergencyOverride();
   }
 
+  function redirectRouteIfNeeded(source = "route") {
+    const redirectTarget = getRedirectUrlForInput(location.href);
+    if (!redirectTarget) {
+      return false;
+    }
+
+    return redirectToDirectInbox(source);
+  }
+
   function hardRouteGuard() {
+    if (redirectRouteIfNeeded("hard_route_guard")) {
+      return true;
+    }
+
     if (!routeRequiresHardBlock()) {
       if (currentReason === "route") {
         hideBlockOverlay();
@@ -347,6 +727,10 @@
   }
 
   async function evaluateAndRender(source) {
+    if (redirectRouteIfNeeded(source)) {
+      return;
+    }
+
     if (isStrictBlockedUrl(location.href) && !isEmergencyOverride()) {
       void showBlockOverlay("route", lastKnownState);
     }
@@ -400,6 +784,11 @@
     mutationQueued = true;
     queueMicrotask(() => {
       mutationQueued = false;
+
+      if (redirectRouteIfNeeded("mutation")) {
+        return;
+      }
+
       if (applyingBlockUi || !routeRequiresHardBlock()) {
         return;
       }
@@ -451,6 +840,10 @@
     window.addEventListener("hashchange", fireUrlEvent, { passive: true });
     window.addEventListener("pageshow", fireUrlEvent, { passive: true });
     window.addEventListener("iretard:urlchange", () => {
+      if (redirectRouteIfNeeded("urlchange")) {
+        return;
+      }
+
       if (isStrictBlockedUrl(location.href) && !isEmergencyOverride()) {
         void showBlockOverlay("route", lastKnownState);
       }
@@ -506,18 +899,23 @@
   });
 
   patchHistoryForSpaNavigation();
+  installNetworkInterceptors();
   attachActivityListeners();
   startMutationObserver();
+  startChallengeTicker();
 
   void globalThis.IretardStorage.getState(Date.now()).then((state) => {
     lastKnownState = globalThis.IretardStorage.normalizeState(state);
     if (isEmergencyOverride(lastKnownState)) {
       clearPreBlockOnly();
     }
+
+    redirectRouteIfNeeded("boot");
     hardRouteGuard();
     void notifyPageActivity();
     void evaluateAndRender("boot");
   }).catch(() => {
+    redirectRouteIfNeeded("boot_error");
     hardRouteGuard();
     void notifyPageActivity();
     void evaluateAndRender("boot");

@@ -1,6 +1,7 @@
 (() => {
+  const STRICT_DAILY_LIMIT_MINUTES = 30;
   const DEFAULT_STATE = Object.freeze({
-    dailyLimit: 60,
+    dailyLimit: STRICT_DAILY_LIMIT_MINUTES,
     usedToday: 0,
     lastReset: 0,
     emergencyCount: 0,
@@ -9,8 +10,9 @@
   });
   const STATE_KEYS = Object.keys(DEFAULT_STATE);
 
-  const EMERGENCY_LIMIT_PER_DAY = 3;
-  const EMERGENCY_DURATION_MS = 5 * 60 * 1000;
+  const EMERGENCY_LIMIT_PER_DAY = 0;
+  const EMERGENCY_DURATION_MS = 0;
+  const CHALLENGE_INTERVAL_MS = 5 * 60 * 1000;
   const ONE_MINUTE_MS = 60 * 1000;
   const THEME_STORAGE_KEY = "themePreference";
   const THEME_PREFERENCES = Object.freeze({
@@ -59,11 +61,11 @@
     const source = rawState || {};
 
     return {
-      dailyLimit: clamp(Math.floor(toSafeNumber(source.dailyLimit, DEFAULT_STATE.dailyLimit)), 1, 1440),
+      dailyLimit: STRICT_DAILY_LIMIT_MINUTES,
       usedToday: Math.max(0, Math.floor(toSafeNumber(source.usedToday, DEFAULT_STATE.usedToday))),
       lastReset: Math.max(0, Math.floor(toSafeNumber(source.lastReset, DEFAULT_STATE.lastReset))),
-      emergencyCount: clamp(Math.floor(toSafeNumber(source.emergencyCount, DEFAULT_STATE.emergencyCount)), 0, EMERGENCY_LIMIT_PER_DAY),
-      emergencyActiveUntil: Math.max(0, Math.floor(toSafeNumber(source.emergencyActiveUntil, DEFAULT_STATE.emergencyActiveUntil))),
+      emergencyCount: 0,
+      emergencyActiveUntil: 0,
       limitLockedDate: typeof source.limitLockedDate === "string" ? source.limitLockedDate : ""
     };
   }
@@ -79,10 +81,11 @@
   function resetForNewDay(state, now = Date.now()) {
     return {
       ...state,
+      dailyLimit: STRICT_DAILY_LIMIT_MINUTES,
       usedToday: 0,
       emergencyCount: 0,
       emergencyActiveUntil: 0,
-      limitLockedDate: "",
+      limitLockedDate: getDayStamp(now),
       lastReset: now
     };
   }
@@ -143,6 +146,14 @@
       next.lastReset = now;
     }
 
+    next.dailyLimit = STRICT_DAILY_LIMIT_MINUTES;
+    next.emergencyCount = 0;
+    next.emergencyActiveUntil = 0;
+
+    if (!next.limitLockedDate) {
+      next.limitLockedDate = getDayStamp(now);
+    }
+
     await safeStorageSet(next);
     return next;
   }
@@ -165,7 +176,7 @@
   }
 
   function isEmergencyActive(state, now = Date.now()) {
-    return toSafeNumber(state.emergencyActiveUntil, 0) > now;
+    return false;
   }
 
   function getDailyLimitMs(state) {
@@ -177,7 +188,7 @@
   }
 
   function getEmergencyUsesLeft(state) {
-    return Math.max(0, EMERGENCY_LIMIT_PER_DAY - toSafeNumber(state.emergencyCount, 0));
+    return 0;
   }
 
   function buildMetrics(state, now = Date.now()) {
@@ -191,11 +202,13 @@
   }
 
   globalThis.IretardStorage = {
+    STRICT_DAILY_LIMIT_MINUTES,
     DEFAULT_STATE,
     THEME_STORAGE_KEY,
     THEME_PREFERENCES,
     EMERGENCY_LIMIT_PER_DAY,
     EMERGENCY_DURATION_MS,
+    CHALLENGE_INTERVAL_MS,
     ONE_MINUTE_MS,
     normalizeThemePreference,
     resolveTheme,

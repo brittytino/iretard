@@ -18,127 +18,199 @@ const BASE_ALLOW_RULES = [
       regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/stories\\/",
       resourceTypes: ["xmlhttprequest"]
     }
+  },
+  {
+    id: 1003,
+    priority: 6,
+    action: { type: "allow" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/notifications\\/",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1004,
+    priority: 6,
+    action: { type: "allow" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/api\\/v1\\/users\\/",
+      resourceTypes: ["xmlhttprequest"]
+    }
   }
 ];
 
 const BLOCK_RULES = [
   {
     id: 1101,
-    priority: 4,
-    action: { type: "block" },
+    priority: 8,
+    action: {
+      type: "redirect",
+      redirect: {
+        regexSubstitution: "https://www.instagram.com/direct/inbox/"
+      }
+    },
     condition: {
       regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/reels(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  },
-  {
-    id: 1106,
-    priority: 4,
-    action: { type: "block" },
-    condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/explore(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
+      resourceTypes: ["main_frame"]
     }
   },
   {
     id: 1102,
-    priority: 4,
-    action: { type: "block" },
+    priority: 8,
+    action: {
+      type: "redirect",
+      redirect: {
+        regexSubstitution: "https://www.instagram.com/direct/inbox/"
+      }
+    },
     condition: {
-      regexFilter: "^https:\\/\\/i\\.instagram\\.com\\/api\\/v1\\/feed\\/reels",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
+      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/reel(\\/|\\?|$)",
+      resourceTypes: ["main_frame"]
     }
   },
   {
     id: 1103,
-    priority: 4,
+    priority: 7,
     action: { type: "block" },
     condition: {
-      regexFilter: "^https:\\/\\/i\\.instagram\\.com\\/api\\/v1\\/discover\\/explore",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.+fragment_clips",
+      resourceTypes: ["xmlhttprequest", "main_frame"]
     }
   },
   {
     id: 1104,
-    priority: 4,
+    priority: 7,
     action: { type: "block" },
     condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/video\\/unified_cvc(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*feed\\/timeline(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
     }
   },
   {
     id: 1105,
-    priority: 4,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*discover\\/topical_explore(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1106,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*clips\\/discover(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1107,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i|graph)\\.instagram\\.com\\/.*logging(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest", "ping", "other"]
+    }
+  },
+  {
+    id: 1108,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*async_ads_privacy(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1109,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*async_critical_notices(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1110,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*api\\/v1\\/media\\/.*\\/seen(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1111,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*api\\/v1\\/fbupload(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1112,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*api\\/v1\\/stats(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1113,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*api\\/v1\\/commerce(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1114,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*api\\/v1\\/shopping(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1115,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/.*api\\/v1\\/sellable_items(\\/|\\?|$)",
+      resourceTypes: ["xmlhttprequest"]
+    }
+  },
+  {
+    id: 1116,
+    priority: 7,
+    action: { type: "block" },
+    condition: {
+      regexFilter: "^https:\\/\\/(www|i)\\.instagram\\.com\\/video\\/unified_cvc(\\/|\\?|$)",
+      resourceTypes: ["main_frame", "xmlhttprequest"]
+    }
+  },
+  {
+    id: 1117,
+    priority: 7,
     action: { type: "block" },
     condition: {
       regexFilter: "^https:\\/\\/graph\\.instagram\\.com\\/logging_client_events(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
+      resourceTypes: ["xmlhttprequest", "ping", "other"]
     }
   }
 ];
 
-const EMERGENCY_BYPASS_RULES = [
-  {
-    id: 1201,
-    priority: 10,
-    action: { type: "allow" },
-    condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/reels(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  },
-  {
-    id: 1202,
-    priority: 10,
-    action: { type: "allow" },
-    condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/explore(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  },
-  {
-    id: 1203,
-    priority: 10,
-    action: { type: "allow" },
-    condition: {
-      regexFilter: "^https:\\/\\/i\\.instagram\\.com\\/api\\/v1\\/feed\\/reels",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  },
-  {
-    id: 1204,
-    priority: 10,
-    action: { type: "allow" },
-    condition: {
-      regexFilter: "^https:\\/\\/i\\.instagram\\.com\\/api\\/v1\\/discover\\/explore",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  },
-  {
-    id: 1205,
-    priority: 10,
-    action: { type: "allow" },
-    condition: {
-      regexFilter: "^https:\\/\\/www\\.instagram\\.com\\/video\\/unified_cvc(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  },
-  {
-    id: 1206,
-    priority: 10,
-    action: { type: "allow" },
-    condition: {
-      regexFilter: "^https:\\/\\/graph\\.instagram\\.com\\/logging_client_events(\\/|\\?|$)",
-      resourceTypes: ["main_frame", "xmlhttprequest"]
-    }
-  }
-];
+const LEGACY_RULE_IDS = [1201, 1202, 1203, 1204, 1205, 1206];
 
 const ALL_DNR_RULE_IDS = [
   ...BASE_ALLOW_RULES,
   ...BLOCK_RULES,
-  ...EMERGENCY_BYPASS_RULES
+  ...LEGACY_RULE_IDS.map((id) => ({ id }))
 ].map((rule) => rule.id);
 
 const tracking = {
@@ -148,7 +220,7 @@ const tracking = {
   startedAt: 0
 };
 let trackingLock = Promise.resolve();
-let networkEmergencyMode = null;
+let networkRulesInstalled = false;
 
 function runGuarded(task) {
   void task().catch((error) => {
@@ -162,28 +234,25 @@ function withTrackingLock(task) {
   return next;
 }
 
-function buildNetworkRules(emergencyActive) {
-  return emergencyActive
-    ? [...BASE_ALLOW_RULES, ...EMERGENCY_BYPASS_RULES, ...BLOCK_RULES]
-    : [...BASE_ALLOW_RULES, ...BLOCK_RULES];
+function buildNetworkRules() {
+  return [...BASE_ALLOW_RULES, ...BLOCK_RULES];
 }
 
-async function installNetworkRules(emergencyActive = false) {
+async function installNetworkRules() {
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: ALL_DNR_RULE_IDS,
-    addRules: buildNetworkRules(emergencyActive)
+    addRules: buildNetworkRules()
   });
 }
 
 async function ensureNetworkRulesForState(state, now = Date.now()) {
-  const shouldUseEmergencyMode = globalThis.IretardStorage.isEmergencyActive(state, now);
-  if (networkEmergencyMode === shouldUseEmergencyMode) {
+  if (networkRulesInstalled) {
     return;
   }
 
   try {
-    await installNetworkRules(shouldUseEmergencyMode);
-    networkEmergencyMode = shouldUseEmergencyMode;
+    await installNetworkRules();
+    networkRulesInstalled = true;
   } catch (error) {
     console.error("iRetard network rules sync failed:", error);
   }
@@ -337,26 +406,8 @@ async function evaluateUrl(url) {
 }
 
 async function setDailyLimit(minutes) {
-  const parsed = Math.floor(Number(minutes));
-  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 1440) {
-    throw new Error("Daily limit must be between 1 and 1440 minutes.");
-  }
-
   const now = Date.now();
-  const today = globalThis.IretardStorage.getDayStamp(now);
-
-  const state = await withTrackingLock(async () => globalThis.IretardStorage.updateState((current) => {
-    if (current.limitLockedDate === today && parsed !== current.dailyLimit) {
-      throw new Error("Locked for today");
-    }
-
-    return {
-      ...current,
-      dailyLimit: parsed,
-      limitLockedDate: today,
-      lastReset: current.lastReset || now
-    };
-  }, now));
+  const state = await globalThis.IretardStorage.getState(now);
 
   await broadcastState(state);
   return state;
@@ -364,38 +415,12 @@ async function setDailyLimit(minutes) {
 
 async function activateEmergency() {
   const now = Date.now();
-  let state = await globalThis.IretardStorage.getState(now);
-
-  if (globalThis.IretardStorage.isEmergencyActive(state, now)) {
-    return {
-      ok: true,
-      alreadyActive: true,
-      state,
-      metrics: globalThis.IretardStorage.buildMetrics(state, now)
-    };
-  }
-
-  if (state.emergencyCount >= globalThis.IretardStorage.EMERGENCY_LIMIT_PER_DAY) {
-    return {
-      ok: false,
-      error: "No emergency unlocks left today.",
-      state,
-      metrics: globalThis.IretardStorage.buildMetrics(state, now)
-    };
-  }
-
-  state = await withTrackingLock(async () => globalThis.IretardStorage.updateState((current) => ({
-    ...current,
-    emergencyCount: current.emergencyCount + 1,
-    emergencyActiveUntil: now + globalThis.IretardStorage.EMERGENCY_DURATION_MS,
-    lastReset: current.lastReset || now
-  }), now));
-
-  await ensureNetworkRulesForState(state, now);
+  const state = await globalThis.IretardStorage.getState(now);
 
   await broadcastState(state);
   return {
-    ok: true,
+    ok: false,
+    error: "Strict mode enabled. Emergency unlock is disabled.",
     alreadyActive: false,
     state,
     metrics: globalThis.IretardStorage.buildMetrics(state, now)
